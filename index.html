@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Fantasy Quidditch - Prototype</title>
+  <style>
+    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+    #overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    button {
+      padding: 6px 12px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="overlay">
+    <h3>Fantasy Quidditch 3D</h3>
+    <p>Select your role:</p>
+    <select id="playerRole">
+      <option value="seeker">Seeker</option>
+      <option value="chaser">Chaser</option>
+      <option value="beater">Beater</option>
+      <option value="keeper">Keeper</option>
+    </select>
+    <button onclick="startGame()">Start Game</button>
+  </div>
+  <script type="module">
+    import * as THREE from 'https://cdn.skypack.dev/three';
+    import { OrbitControls } from 'https://cdn.skypack.dev/three/examples/jsm/controls/OrbitControls';
+
+    let scene, camera, renderer, broomstick;
+    let keys = {};
+
+    function init(role) {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x87ceeb);
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.z = 10;
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const light = new THREE.HemisphereLight(0xffffff, 0x444444);
+      scene.add(light);
+
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(100, 100),
+        new THREE.MeshLambertMaterial({ color: 0x228B22 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      scene.add(ground);
+
+      broomstick = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.1, 0.1, 2),
+        new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+      );
+      broomstick.rotation.z = Math.PI / 2;
+      broomstick.position.y = 2;
+      scene.add(broomstick);
+
+      animate();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (keys['ArrowUp']) broomstick.position.z -= 0.2;
+      if (keys['ArrowDown']) broomstick.position.z += 0.2;
+      if (keys['ArrowLeft']) broomstick.position.x -= 0.2;
+      if (keys['ArrowRight']) broomstick.position.x += 0.2;
+      if (keys[' ']) broomstick.position.y += 0.2; // Space = up
+
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('keydown', (e) => keys[e.key] = true);
+    window.addEventListener('keyup', (e) => keys[e.key] = false);
+
+    window.startGame = () => {
+      document.getElementById('overlay').style.display = 'none';
+      const role = document.getElementById('playerRole').value;
+      init(role);
+    };
+  </script>
+</body>
+</html>
